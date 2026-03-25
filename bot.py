@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from env_variables import DISCORD_BOT_TOKEN, GUILD_ID
+from env_variables import DISCORD_BOT_TOKEN, GUILD_ID, STAGE_RING_RANDOM
 from commands import csv_column_randomizer
 
 DESCRIPTION = """Sonic Racing: CrossWorlds Utility Bot"""
@@ -36,17 +36,19 @@ async def on_ready():
     print('------')
 
 
-@bot.tree.command(name="randomcourses",
+@bot.tree.command(name="courses",
                   description="Generate a random number of Courses",
-                  guild=GUILD_ID_OBJECT)
-async def randomcourses(interaction: discord.Interaction,
-                        count: int = 12,
-                        prevent_duplicates: bool = False):
-    courses = csv_column_randomizer(
-        number_of_items=count,
-        prevent_duplicates=prevent_duplicates,
-        return_string=True
-    )
-    await interaction.response.send_message(courses)
+                  guild=GUILD_ID_OBJECT
+                  )
+async def random_courses(interaction: discord.Interaction,
+                         count: int = 12):
+    courses = csv_column_randomizer(number_of_items=count)
+    embed = discord.Embed(title=" Random Course Selection",
+                          color=discord.Color.from_rgb(0, 60, 180),
+                          description=courses)
+    file = discord.File(STAGE_RING_RANDOM, filename="image.png")
+    embed.set_thumbnail(url="attachment://image.png")
+    await interaction.response.send_message(embed=embed, file=file)
+
 
 bot.run(DISCORD_BOT_TOKEN)
