@@ -1,20 +1,26 @@
+import os
 import discord
-from discord.ext import commands
 
-from env_variables import DISCORD_BOT_TOKEN, GUILD_ID, STAGE_RING_RANDOM
+from discord.ext import commands
+from dotenv import load_dotenv
+
 from commands import csv_column_randomizer
 
-DESCRIPTION = """Sonic Racing: CrossWorlds Utility Bot"""
+load_dotenv()
+
+DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
+TEST_GUILD_ID = os.getenv("TEST_GUILD_ID")
+STAGE_RING_RANDOM = os.getenv("STAGE_RING_RANDOM")
 
 # Set up Discord bot
 intents = discord.Intents.default()
 intents.message_content = True
 
 bot = commands.Bot(command_prefix='!',
-                   description=DESCRIPTION,
+                   description="Sonic Racing: CrossWorlds Utility Bot",
                    intents=intents)
 
-GUILD_ID_OBJECT = discord.Object(id=GUILD_ID)
+GUILD_ID_OBJECT = discord.Object(id=TEST_GUILD_ID)
 
 
 @bot.event
@@ -26,9 +32,9 @@ async def on_ready():
     # Sync the application commands to the specified guild
     # Allows for faster command registration during development and testing
     try:
-        guild = discord.Object(id=GUILD_ID)
+        guild = discord.Object(id=TEST_GUILD_ID)
         synced = await bot.tree.sync(guild=guild)
-        print(f"Synced {len(synced)} command(s) to the guild '{GUILD_ID}'")
+        print(f"Synced {len(synced)} command(s) to the guild '{TEST_GUILD_ID}'")
     except Exception as e:
         print(f"Error syncing commands: {str(e)}")
 

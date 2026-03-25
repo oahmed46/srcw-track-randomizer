@@ -3,7 +3,7 @@ import os
 import pandas as pd
 
 
-def csv_column_randomizer(csv_file: str = "main_courses.csv",
+def csv_column_randomizer(csv_file: str = "data/main_courses.csv",
                           number_of_items: int = 1,
                           prevent_duplicates: bool = True,
                           return_string: bool = True) -> list | str:
