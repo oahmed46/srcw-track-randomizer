@@ -1,10 +1,11 @@
-import os
+import os  # default module
 import discord
 
+from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from commands import csv_column_randomizer
+from commands import csv_column_randomizer, csv_column_length
 
 load_dotenv()
 
@@ -28,13 +29,16 @@ async def on_ready():
     """Event handler for when the bot is ready"""
     # Tell the type checker that User is filled up at this point
     assert bot.user is not None
-
-    # Sync the application commands to the specified guild
-    # Allows for faster command registration during development and testing
     try:
-        guild = discord.Object(id=TEST_GUILD_ID)
-        synced = await bot.tree.sync(guild=guild)
-        print(f"Synced {len(synced)} command(s) to the guild '{TEST_GUILD_ID}'")
+        synced = await bot.tree.sync()
+        print(f"Synced {len(synced)} command(s) synced globally")
+
+        # Sync the application commands to the specified guild
+        # Allows for faster command registration during development and testing
+
+        # guild = discord.Object(id=TEST_GUILD_ID)
+        # synced = await bot.tree.sync(guild=guild)
+        # print(f"Synced {len(synced)} command(s) to the guild '{TEST_GUILD_ID}'")
     except Exception as e:
         print(f"Error syncing commands: {str(e)}")
 
@@ -43,18 +47,26 @@ async def on_ready():
 
 
 @bot.tree.command(name="courses",
-                  description="Generate a random number of Courses",
-                  guild=GUILD_ID_OBJECT
+                  description="Generate a random number of Courses"
+                  # ,guild=GUILD_ID_OBJECT  # Uncomment this line to register the command to a specific guild for faster updates during development
                   )
+@app_commands.describe(count="The number of courses to generate. default = 12")
+@app_commands.describe(prevent_duplicates="Whether to prevent duplicate course selection. default = True")
 async def random_courses(interaction: discord.Interaction,
-                         count: int = 12):
-    courses = csv_column_randomizer(number_of_items=count)
+                         count: app_commands.Range[int, 1, csv_column_length()] = 12,
+                         prevent_duplicates: bool = True):
+    courses = csv_column_randomizer(number_of_items=count,
+                                    prevent_duplicates=prevent_duplicates)
     embed = discord.Embed(title=" Random Course Selection",
                           color=discord.Color.from_rgb(0, 60, 180),
                           description=courses)
     file = discord.File(STAGE_RING_RANDOM, filename="image.png")
     embed.set_thumbnail(url="attachment://image.png")
-    await interaction.response.send_message(embed=embed, file=file)
+    await interaction.response.send_message(embed=embed,
+                                            file=file,
+                                            delete_after=7200)  # Delete the message after 2 hours (7200 seconds)
+    message = await interaction.original_response()
+    await message.pin(reason="Pinned by bot: Random Course Selection")
 
 
 bot.run(DISCORD_BOT_TOKEN)
